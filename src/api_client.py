@@ -34,11 +34,11 @@ class APICLIENT:
             print(f"Ошибка: {response.status_code}")
 
 
-    def get_response_data(self):
-        '''Получение сохраненных данных из hh.ru в формате dict '''
+    def get_response_data(self, name_file):
+        '''Получение сохраненных данных из hh.ru в формате dict.'''
 
         file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        file_api_hh = os.path.join(file_path, 'data', 'api_hh.json')
+        file_api_hh = os.path.join(file_path, 'data', f"{name_file}")
         with open(file_api_hh, 'r', encoding='utf-8') as file:
             data = json.load(file)
         return data
