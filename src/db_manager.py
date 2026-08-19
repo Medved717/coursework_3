@@ -1,4 +1,6 @@
-from collections.abc import dict_items
+import psycopg2
+from dotenv import load_dotenv
+import os
 
 from src.api_client import APICLIENT
 
@@ -28,7 +30,43 @@ class DBMANAGER:
                 dict_company[company_name] = 1
             else:
                 dict_company[company_name] += 1
+
+        load_dotenv()
+        db_password = os.getenv('db_password')
+
+        conn = psycopg2.connect(host='localhost', port='5432', user='postgres', password=db_password, dbname='coursework_3')
+        cur = conn.cursor()
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS company_vacancy 
+        (
+            company_id SERIAL PRIMARY KEY,
+            company_name VARCHAR(100) NOT NULL,
+            quantity_vacancy INT NOT NULL
+            
+        )''')
+
+        for key, value in dict_company.items():
+            cur.execute(f'''INSERT INTO company_vacancy (company_name, quantity_vacancy) 
+            VALUES (%s, %s)''', (key, value))
+
+
+        conn.commit()      # Комитим изменения в базе данных.
+        cur.close()        # Закрываем курсор.
+        conn.close()       # Закрываем соединение.
+
+        # Оставил возвращение на всякий случай для возможного использования.
         return dict_company
+
+
+
+
+
+
+
+
+
+
+
 
     def get_all_vacancies(self):
         '''Получает список всех вакансий с указанием названия компании,
@@ -62,12 +100,12 @@ class DBMANAGER:
 
 
 
-# obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
-# result = obj_1.get_companies_and_vacancies_count()
-# print(result)
-
-
 obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
-result = obj_1.get_all_vacancies()
-for i in result:
-    print(i)
+result = obj_1.get_companies_and_vacancies_count()
+print(result)
+
+#
+# obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
+# result = obj_1.get_all_vacancies()
+# for i in result:
+#     print(i)
