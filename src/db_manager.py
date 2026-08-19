@@ -31,12 +31,15 @@ class DBMANAGER:
             else:
                 dict_company[company_name] += 1
 
+        # Устанавливаем связь с файлом .env для получения скрытых данных.
         load_dotenv()
         db_password = os.getenv('db_password')
 
+        # Устанавливаем соединение с использованием параметров, после чего устанавливаем курсор.
         conn = psycopg2.connect(host='localhost', port='5432', user='postgres', password=db_password, dbname='coursework_3')
         cur = conn.cursor()
 
+        # Создаем таблицу в базе данных при ее отсутствии.
         cur.execute('''CREATE TABLE IF NOT EXISTS company_vacancy 
         (
             company_id SERIAL PRIMARY KEY,
@@ -45,10 +48,10 @@ class DBMANAGER:
             
         )''')
 
+        # Идем по получившемуся словарю и делаем запись в базу данных.
         for key, value in dict_company.items():
             cur.execute(f'''INSERT INTO company_vacancy (company_name, quantity_vacancy) 
             VALUES (%s, %s)''', (key, value))
-
 
         conn.commit()      # Комитим изменения в базе данных.
         cur.close()        # Закрываем курсор.
