@@ -60,17 +60,6 @@ class DBMANAGER:
         # Оставил возвращение на всякий случай для возможного использования.
         return dict_company
 
-
-
-
-
-
-
-
-
-
-
-
     def get_all_vacancies(self):
         '''Получает список всех вакансий с указанием названия компании,
         названия вакансии и зарплаты и ссылки на вакансию.'''
@@ -92,6 +81,34 @@ class DBMANAGER:
             dict_items['url_vacancy'] = url_vacancy
 
             list_result.append(dict_items)
+
+        load_dotenv()
+        password = os.getenv('db_password')
+
+        conn = psycopg2.connect(user='postgres', password=password, port='5432',
+                                dbname='coursework_3', host='localhost')
+        cur = conn.cursor()
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS start_vacancy (
+            company_id SERIAL PRIMARY KEY,
+            company_name VARCHAR(100) NOT NULL,
+            vacancy_name VARCHAR(100) NOT NULL,
+            salary_from VARCHAR(100) NOT NULL,
+            salary_to VARCHAR(100) NOT NULL,
+            url_vacancy VARCHAR(350) NOT NULL
+        )''')
+
+
+        for vacancy in list_result:
+            cur.execute('''INSERT INTO start_vacancy (company_name, vacancy_name, salary_from, salary_to, url_vacancy) VALUES (%s, %s, %s, %s, %s)''',
+                        (vacancy['company_name'],
+                        vacancy['vacancy_name'],
+                        vacancy['salary_from'],
+                        vacancy['salary_to'],
+                        vacancy['url_vacancy']))
+        conn.commit()
+        cur.close()
+        conn.close()
         return list_result
 
 
@@ -103,12 +120,12 @@ class DBMANAGER:
 
 
 
-obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
-result = obj_1.get_companies_and_vacancies_count()
-print(result)
-
-#
 # obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
-# result = obj_1.get_all_vacancies()
-# for i in result:
-#     print(i)
+# result = obj_1.get_companies_and_vacancies_count()
+# print(result)
+
+
+obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
+result = obj_1.get_all_vacancies()
+for i in result:
+    print(i)
