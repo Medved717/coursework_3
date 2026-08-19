@@ -30,7 +30,6 @@ class DBMANAGER:
                 dict_company[company_name] += 1
         return dict_company
 
-
     def get_all_vacancies(self):
         '''Получает список всех вакансий с указанием названия компании,
         названия вакансии и зарплаты и ссылки на вакансию.'''
@@ -53,6 +52,14 @@ class DBMANAGER:
 
             list_result.append(dict_items)
         return list_result
+
+
+
+
+
+
+
+
 
 
 # obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
