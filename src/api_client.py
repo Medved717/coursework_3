@@ -3,7 +3,7 @@ import json
 import requests
 import os
 
-class APICLIENT:
+class ApiClient:
 
     def __init__(self, url, headers, params):
         self.url = "https://api.hh.ru/vacancies"
