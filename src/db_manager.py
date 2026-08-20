@@ -109,6 +109,29 @@ class DbManager:
         conn.close()
         return result
 
+    @classmethod
+    def get_vacancies_with_keyword(clas, db_name, search_word):
+        """Получает список всех вакансий, в названии которых содержатся
+        переданные в метод слова, например python."""
+
+        load_dotenv()
+        password = os.getenv('db_password')
+        conn = psycopg2.connect(
+            user='postgres',
+            password=password,
+            host='localhost',
+            port='5432',
+            dbname=db_name
+        )
+        cur = conn.cursor()
+        cur.execute("""
+        SELECT * FROM list_vacancy WHERE requirement ILIKE %s
+        """, (f'%{search_word}%',))
+
+        result = cur.fetchall()
+        cur.close()
+        conn.close()
+        return result
 
 # result = DbManager.get_companies_and_vacancies_count('coursework_3')
 # print(result)
@@ -121,6 +144,11 @@ class DbManager:
 # result_3 = DbManager.get_avg_salary('coursework_3')
 # print(result_3)
 
-result_4 = DbManager.get_vacancies_with_higher_salary('coursework_3')
-for i in result_4:
+# result_4 = DbManager.get_vacancies_with_higher_salary('coursework_3')
+# for i in result_4:
+#     print(i)
+
+
+result_5 = DbManager.get_vacancies_with_keyword('coursework_3', 'Python')
+for i in result_5:
     print(i)

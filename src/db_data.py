@@ -159,6 +159,10 @@ class DbSave:
         return None
 
 
+
+
+
+
 obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
 result_1 = obj_1.create_data_base('coursework_3')
 
