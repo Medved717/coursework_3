@@ -58,8 +58,28 @@ class DbManager:
         conn.close()
         return result
 
+    @staticmethod
+    def get_avg_salary(db_name):
+        """Получает среднюю зарплату по вакансиям."""
 
+        load_dotenv()
+        password = os.getenv('db_password')
 
+        conn = psycopg2.connect(
+            user='postgres',
+            password=password,
+            host='localhost',
+            port='5432',
+            dbname=db_name
+        )
+        cur = conn.cursor()
+        cur.execute("""
+        SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM list_vacancy 
+        """)
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+        return result[0]
 
 
 
@@ -71,11 +91,10 @@ class DbManager:
 # result = DbManager.get_companies_and_vacancies_count('coursework_3')
 # print(result)
 
-result_2 = DbManager.get_all_vacancies('coursework_3')
-for i in result_2:
-    print(i)
-#
-# obj_1 = DBMANAGER(APICLIENT.get_response_data('hh_vacancies.json'))
-# result = obj_1.get_all_vacancies()
-# for i in result:
+# result_2 = DbManager.get_all_vacancies('coursework_3')
+# for i in result_2:
 #     print(i)
+
+
+# result_3 = DbManager.get_avg_salary('coursework_3')
+# print(result_3)

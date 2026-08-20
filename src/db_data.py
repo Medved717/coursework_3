@@ -81,8 +81,8 @@ class DbSave:
                 vacancy_id SERIAL PRIMARY KEY,
                 company_name VARCHAR(100) NOT NULL,
                 vacancy_name VARCHAR(100) NOT NULL,
-                salary_from VARCHAR(100) NOT NULL,
-                salary_to VARCHAR(100) NOT NULL,
+                salary_from INT NOT NULL,
+                salary_to INT NOT NULL,
                 url_vacancy VARCHAR(350) NOT NULL,
                 city_work VARCHAR(50) NOT NULL,
                 requirement VARCHAR(350) NOT NULL
@@ -159,13 +159,13 @@ class DbSave:
         return None
 
 
-# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result = obj_1.create_data_base('coursework_3')
+obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
+result_1 = obj_1.create_data_base('coursework_3')
 
 
-# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result = obj_1.create_table_vacancy('coursework_3')
-# print(result)
+obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
+result_2 = obj_1.create_table_vacancy('coursework_3')
+print(result_2)
 
 
-retult_1 = DbSave.create_table_company('coursework_3', 'company')
+retult_3 = DbSave.create_table_company('coursework_3', 'company')
