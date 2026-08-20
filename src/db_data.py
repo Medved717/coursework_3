@@ -43,74 +43,129 @@ class DbSave:
             if conn:
                 conn.close()
 
-    def create_table_company(self, db_name):
+    def create_table_vacancy(self, db_name):
         """Метод создает таблицу вакансий в базе данных с указанием названия id вакансии,
         названия вакансии, названия компании, зарплаты и ссылки на вакансию."""
 
-        list_result = []
+        try:
+            list_result = []
 
-        for vacancy in self.list_vacanccies:
-            vacancy_name = vacancy.get('name', {})
-            company_name = vacancy.get('employer', {}).get('name', {})
-            salary_from = vacancy.get('salary', {}).get('from', {})
-            salary_to = vacancy.get('salary', {}).get('to', {})
-            url_vacancy = vacancy.get('alternate_url', {})
+            for vacancy in self.list_vacanccies:
+                company_name = vacancy.get('employer', {}).get('name', {})
+                vacancy_name = vacancy.get('name', {})
+                salary_from = vacancy.get('salary', {}).get('from', {})
+                salary_to = vacancy.get('salary', {}).get('to', {})
+                url_vacancy = vacancy.get('alternate_url', {})
+                city_work = vacancy.get('area', {}).get('name', {})
+                requirement = vacancy.get('snippet', {}).get('requirement', {})
 
-            dict_items = {}
-            dict_items['vacancy_name'] = vacancy_name
-            dict_items['company_name'] = company_name
-            dict_items['salary_from'] = salary_from
-            dict_items['salary_to'] = salary_to
-            dict_items['url_vacancy'] = url_vacancy
+                dict_items = {}
+                dict_items['company_name'] = company_name
+                dict_items['vacancy_name'] = vacancy_name
+                dict_items['salary_from'] = salary_from
+                dict_items['salary_to'] = salary_to
+                dict_items['url_vacancy'] = url_vacancy
+                dict_items['city_work'] = city_work
+                dict_items['requirement'] = requirement
 
-            list_result.append(dict_items)
+                list_result.append(dict_items)
+
+            load_dotenv()
+            password = os.getenv('db_password')
+
+            conn = psycopg2.connect(user='postgres', password=password, port='5432',
+                                    dbname=db_name, host='localhost')
+            cur = conn.cursor()
+            cur.execute('''
+            CREATE TABLE IF NOT EXISTS list_vacancy (
+                vacancy_id SERIAL PRIMARY KEY,
+                company_name VARCHAR(100) NOT NULL,
+                vacancy_name VARCHAR(100) NOT NULL,
+                salary_from VARCHAR(100) NOT NULL,
+                salary_to VARCHAR(100) NOT NULL,
+                url_vacancy VARCHAR(350) NOT NULL,
+                city_work VARCHAR(50) NOT NULL,
+                requirement VARCHAR(350) NOT NULL
+            )''')
+
+
+            for vacancy in list_result:
+                cur.execute('''INSERT INTO list_vacancy (vacancy_name, 
+                                                          company_name, 
+                                                          salary_from, 
+                                                          salary_to, 
+                                                          url_vacancy,
+                                                          city_work,
+                                                          requirement) 
+                                                          VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                            (vacancy['vacancy_name'],
+                             vacancy['company_name'],
+                             vacancy['salary_from'],
+                             vacancy['salary_to'],
+                             vacancy['url_vacancy'],
+                             vacancy['city_work'],
+                             vacancy['requirement']))
+            conn.commit()
+        except Exception as f:
+            print(f'Ошибка: Возможно таблица уже была создана!{f}')
+        finally:
+            cur.close()
+            conn.close()
+        return None
+
+    @staticmethod
+    def create_table_company(db_name, name_table):
+        """Создание таблицы компании из-под таблицы вакансий."""
 
         load_dotenv()
         password = os.getenv('db_password')
+        conn = psycopg2.connect(
+            user='postgres',
+            password=password,
+            host='localhost',
+            port='5432',
+            dbname=db_name
+        )
 
-        conn = psycopg2.connect(user='postgres', password=password, port='5432',
-                                dbname=db_name, host='localhost')
         cur = conn.cursor()
-        cur.execute('''
-        CREATE TABLE IF NOT EXISTS list_vacancy (
-            vacancy_id SERIAL PRIMARY KEY,
-            vacancy_name VARCHAR(100) NOT NULL,
-            company_name VARCHAR(100) NOT NULL,
-            salary_from VARCHAR(100) NOT NULL,
-            salary_to VARCHAR(100) NOT NULL,
-            url_vacancy VARCHAR(350) NOT NULL
-        )''')
+        try:
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS company (
+        company_id SERIAL PRIMARY KEY,
+        company_name VARCHAR(100) NOT NULL,
+        count_vacancy INT NOT NULL)
+            ''')
+            cur.execute('''
+            INSERT INTO company (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
+            FROM list_vacancy GROUP BY company_name ORDER BY company_name ASC'''
+            )
+            cur.execute('''
+            ALTER TABLE list_vacancy ADD COLUMN company_id INT
+            ''')
+            cur.execute('''
+            UPDATE list_vacancy SET company_id=company.company_id FROM company 
+            WHERE list_vacancy.company_name=company.company_name
+            ''')
+            cur.execute('''
+            ALTER TABLE list_vacancy DROP COLUMN company_name
+            ''')
+            cur.execute('''ALTER TABLE list_vacancy ALTER COLUMN company_id SET NOT NULL''')
+            conn.commit()
+        except Exception as f:
+            print(f'Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}')
+        finally:
+            cur.close()
+            conn.close()
+        return None
 
 
-        for vacancy in list_result:
-            cur.execute('''INSERT INTO list_vacancy (vacancy_name, company_name, salary_from, salary_to, url_vacancy) VALUES (%s, %s, %s, %s, %s)''',
-                        (vacancy['vacancy_name'],
-                              vacancy['company_name'],
-                              vacancy['salary_from'],
-                              vacancy['salary_to'],
-                              vacancy['url_vacancy']))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return list_result
-
-
-
-
-
-
-
-#
 # obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
 # result = obj_1.create_data_base('coursework_3')
 
 
 # obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result = obj_1.create_table_company('coursework_3')
+# result = obj_1.create_table_vacancy('coursework_3')
 # print(result)
 
-#
-# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result = obj_1.create_table_company()
-# for i in result:
-#     print(i)
+
+retult_1 = DbSave.create_table_company('coursework_3', 'company')

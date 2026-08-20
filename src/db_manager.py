@@ -17,20 +17,6 @@ class DBMANAGER:
     def get_companies_and_vacancies_count(self):
         '''Получает список всех компаний и количество вакансий у каждой компании.'''
 
-        # Создаем пустой словарь.
-        dict_company = {}
-
-        # Проходимся по списку вакинсий.
-        for vacancy in self.list_vacanccies:
-            # Из представленного словаря достаем наименование компании путем применения метода get.
-            company_name = vacancy.get('employer', {}).get('name', {})
-            # По условию если ключа(наименования компании) нет в словаре, то создается новый словарь,
-            # а если компания такая уже есть, то к счетчику прибавляется 1.
-            if company_name not in dict_company:
-                dict_company[company_name] = 1
-            else:
-                dict_company[company_name] += 1
-
         # Устанавливаем связь с файлом .env для получения скрытых данных.
         load_dotenv()
         db_password = os.getenv('db_password')
@@ -39,26 +25,16 @@ class DBMANAGER:
         conn = psycopg2.connect(host='localhost', port='5432', user='postgres', password=db_password, dbname='coursework_3')
         cur = conn.cursor()
 
-        # Создаем таблицу в базе данных при ее отсутствии.
-        cur.execute('''CREATE TABLE IF NOT EXISTS company_vacancy 
-        (
-            company_id SERIAL PRIMARY KEY,
-            company_name VARCHAR(100) NOT NULL,
-            quantity_vacancy INT NOT NULL
-            
-        )''')
-
-        # Идем по получившемуся словарю и делаем запись в базу данных.
-        for key, value in dict_company.items():
-            cur.execute(f'''INSERT INTO company_vacancy (company_name, quantity_vacancy) 
-            VALUES (%s, %s)''', (key, value))
+        # Демонстрируем сведения по вакансиям в каждой компании.
+        cur.execute('''SELECT company_name, count_vacancy FROM company''')
+        result = cur.fetchall()
 
         conn.commit()      # Комитим изменения в базе данных.
         cur.close()        # Закрываем курсор.
         conn.close()       # Закрываем соединение.
 
         # Оставил возвращение на всякий случай для возможного использования.
-        return dict_company
+        return result
 
     def get_all_vacancies(self):
         '''Получает список всех вакансий с указанием названия компании,
