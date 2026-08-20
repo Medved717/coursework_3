@@ -81,11 +81,33 @@ class DbManager:
         conn.close()
         return result[0]
 
+    @classmethod
+    def get_vacancies_with_higher_salary(cls, db_name):
+        """Получает список всех вакансий, у которых
+        зарплата выше средней по всем вакансиям."""
+
+        avg_salary = DbManager.get_avg_salary(db_name)
+
+        load_dotenv()
+        password = os.getenv('db_password')
+
+        conn = psycopg2.connect(
+            user='postgres',
+            password=password,
+            host='localhost',
+            port='5432',
+            dbname=db_name
+        )
+        cur = conn.cursor()
+        cur.execute('''
+        SELECT * FROM list_vacancy WHERE ((salary_from + salary_to) / 2) > %s
+        ''', (avg_salary,))
+        result = cur.fetchall()
 
 
-
-
-
+        cur.close()
+        conn.close()
+        return result
 
 
 # result = DbManager.get_companies_and_vacancies_count('coursework_3')
@@ -98,3 +120,7 @@ class DbManager:
 
 # result_3 = DbManager.get_avg_salary('coursework_3')
 # print(result_3)
+
+result_4 = DbManager.get_vacancies_with_higher_salary('coursework_3')
+for i in result_4:
+    print(i)
