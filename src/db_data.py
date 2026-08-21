@@ -11,11 +11,13 @@ from src.api_client import ApiClient
 class DbSave:
     """Класс для создания базы данных и сохранения таблиц компаний и вакансий."""
 
-    def __init__(self, list_vacanccies=None):
-        if list_vacanccies == None:
-            list_vacanccies = ApiClient.get_response_data('hh_vacancies.json')
-        else:
-            self.list_vacanccies=list_vacanccies
+    list_vacanccies = ApiClient.get_response_data('hh_vacancies.json')
+
+    # def __init__(self, list_vacanccies=None):
+    #     if list_vacanccies == None:
+    #         list_vacanccies = ApiClient.get_response_data('hh_vacancies.json')
+    #     else:
+    #         self.list_vacanccies=list_vacanccies
 
     @staticmethod
     def create_data_base(name_data_base):
@@ -43,14 +45,15 @@ class DbSave:
             if conn:
                 conn.close()
 
-    def create_table_vacancy(self, db_name):
+    @classmethod
+    def create_table_vacancy(cls, db_name, vacancy_name_table):
         """Метод создает таблицу вакансий в базе данных с указанием названия id вакансии,
         названия вакансии, названия компании, зарплаты и ссылки на вакансию."""
 
         try:
             list_result = []
 
-            for vacancy in self.list_vacanccies:
+            for vacancy in cls.list_vacanccies:
                 company_name = vacancy.get('employer', {}).get('name', {})
                 vacancy_name = vacancy.get('name', {})
                 salary_from = vacancy.get('salary', {}).get('from', {})
@@ -76,8 +79,8 @@ class DbSave:
             conn = psycopg2.connect(user='postgres', password=password, port='5432',
                                     dbname=db_name, host='localhost')
             cur = conn.cursor()
-            cur.execute('''
-            CREATE TABLE IF NOT EXISTS list_vacancy (
+            cur.execute(f'''
+            CREATE TABLE IF NOT EXISTS {vacancy_name_table} (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_name VARCHAR(100) NOT NULL,
                 vacancy_name VARCHAR(100) NOT NULL,
@@ -90,7 +93,7 @@ class DbSave:
 
 
             for vacancy in list_result:
-                cur.execute('''INSERT INTO list_vacancy (vacancy_name, 
+                cur.execute(f'''INSERT INTO {vacancy_name_table} (vacancy_name, 
                                                           company_name, 
                                                           salary_from, 
                                                           salary_to, 
@@ -114,7 +117,7 @@ class DbSave:
         return None
 
     @staticmethod
-    def create_table_company(db_name, name_table):
+    def create_table_company(db_name, vacancy_table_name, company_name_table):
         """Создание таблицы компании из-под таблицы вакансий."""
 
         load_dotenv()
@@ -129,28 +132,29 @@ class DbSave:
 
         cur = conn.cursor()
         try:
-            cur.execute('''
-                CREATE TABLE IF NOT EXISTS company (
+            cur.execute(f'''
+                CREATE TABLE IF NOT EXISTS {company_name_table} (
         company_id SERIAL PRIMARY KEY,
         company_name VARCHAR(100) NOT NULL,
         count_vacancy INT NOT NULL)
             ''')
-            cur.execute('''
-            INSERT INTO company (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
-            FROM list_vacancy GROUP BY company_name ORDER BY company_name ASC'''
+            cur.execute(f'''
+            INSERT INTO {company_name_table} (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
+            FROM {vacancy_table_name} GROUP BY company_name ORDER BY company_name ASC'''
             )
-            cur.execute('''
-            ALTER TABLE list_vacancy ADD COLUMN company_id INT
+            cur.execute(f'''
+            ALTER TABLE {vacancy_table_name} ADD COLUMN company_id INT
             ''')
-            cur.execute('''
-            UPDATE list_vacancy SET company_id=company.company_id FROM company 
-            WHERE list_vacancy.company_name=company.company_name
+            cur.execute(f'''
+            UPDATE {vacancy_table_name} SET company_id={company_name_table}.company_id FROM {company_name_table} 
+            WHERE {vacancy_table_name}.company_name={company_name_table}.company_name
             ''')
-            cur.execute('''
-            ALTER TABLE list_vacancy DROP COLUMN company_name
+            cur.execute(f'''
+            ALTER TABLE {vacancy_table_name} DROP COLUMN company_name
             ''')
-            cur.execute('''ALTER TABLE list_vacancy ALTER COLUMN company_id SET NOT NULL''')
-            cur.execute('''ALTER TABLE list_vacancy ADD CONSTRAINT fk_list_vacancy_company_id_company FOREIGN KEY (company_id) REFERENCES company(company_id)''')
+            cur.execute(f'''ALTER TABLE {vacancy_table_name} ALTER COLUMN company_id SET NOT NULL''')
+            cur.execute(f'''ALTER TABLE {vacancy_table_name} ADD CONSTRAINT fk_list_vacancy_company_id_company 
+            FOREIGN KEY (company_id) REFERENCES {company_name_table}(company_id)''')
             conn.commit()
         except Exception as f:
             print(f'Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}')
@@ -159,18 +163,47 @@ class DbSave:
             conn.close()
         return None
 
+    @staticmethod
+    def exists_db(input_db_name):
+        '''Метод проверяет наличие базы данных.'''
+
+        load_dotenv()
+        password = os.getenv('db_password')
+        conn = psycopg2.connect(
+            user='postgres',
+            password=password,
+            host='localhost',
+            port='5432',
+            dbname='postgres'
+        )
+
+        cur = conn.cursor()
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+        cur.execute('''SELECT 1 FROM pg_database WHERE datname = %s''', (input_db_name,))
+        result = cur.fetchone()
+        if result and result[0] == 1:
+            print(f'База данных {input_db_name} уже существует!')
+            return 1
+        else:
+            print(f'База данных {input_db_name} отсутствует.')
+            return 0
 
 
 
 
 
-obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-result_1 = obj_1.create_data_base('coursework_3')
 
-
-obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-result_2 = obj_1.create_table_vacancy('coursework_3')
-print(result_2)
-
-
-retult_3 = DbSave.create_table_company('coursework_3', 'company')
+# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
+# result_1 = obj_1.create_data_base('coursework_3')
+#
+#
+# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
+# result_2 = obj_1.create_table_vacancy('coursework_3')
+# print(result_2)
+#
+#
+# retult_3 = DbSave.create_table_company('coursework_3', 'company')
+#
+# result_4 = DbSave.exists_db('coursework_3')
+# print(result_4)
