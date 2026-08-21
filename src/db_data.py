@@ -150,6 +150,7 @@ class DbSave:
             ALTER TABLE list_vacancy DROP COLUMN company_name
             ''')
             cur.execute('''ALTER TABLE list_vacancy ALTER COLUMN company_id SET NOT NULL''')
+            cur.execute('''ALTER TABLE list_vacancy ADD CONSTRAINT fk_list_vacancy_company_id_company FOREIGN KEY (company_id) REFERENCES company(company_id)''')
             conn.commit()
         except Exception as f:
             print(f'Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}')
