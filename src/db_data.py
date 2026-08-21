@@ -46,7 +46,7 @@ class DbSave:
                 conn.close()
 
     @classmethod
-    def create_table_vacancy(cls, db_name, vacancy_name_table):
+    def create_table_vacancy(cls, db_name):
         """Метод создает таблицу вакансий в базе данных с указанием названия id вакансии,
         названия вакансии, названия компании, зарплаты и ссылки на вакансию."""
 
@@ -80,7 +80,7 @@ class DbSave:
                                     dbname=db_name, host='localhost')
             cur = conn.cursor()
             cur.execute(f'''
-            CREATE TABLE IF NOT EXISTS {vacancy_name_table} (
+            CREATE TABLE IF NOT EXISTS vacancy (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_name VARCHAR(100) NOT NULL,
                 vacancy_name VARCHAR(100) NOT NULL,
@@ -93,7 +93,7 @@ class DbSave:
 
 
             for vacancy in list_result:
-                cur.execute(f'''INSERT INTO {vacancy_name_table} (vacancy_name, 
+                cur.execute('''INSERT INTO vacancy (vacancy_name, 
                                                           company_name, 
                                                           salary_from, 
                                                           salary_to, 
@@ -117,7 +117,7 @@ class DbSave:
         return None
 
     @staticmethod
-    def create_table_company(db_name, vacancy_table_name, company_name_table):
+    def create_table_company(db_name):
         """Создание таблицы компании из-под таблицы вакансий."""
 
         load_dotenv()
@@ -132,29 +132,29 @@ class DbSave:
 
         cur = conn.cursor()
         try:
-            cur.execute(f'''
-                CREATE TABLE IF NOT EXISTS {company_name_table} (
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS company (
         company_id SERIAL PRIMARY KEY,
         company_name VARCHAR(100) NOT NULL,
         count_vacancy INT NOT NULL)
             ''')
-            cur.execute(f'''
-            INSERT INTO {company_name_table} (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
-            FROM {vacancy_table_name} GROUP BY company_name ORDER BY company_name ASC'''
+            cur.execute('''
+            INSERT INTO company (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
+            FROM vacancy GROUP BY company_name ORDER BY company_name ASC'''
             )
             cur.execute(f'''
-            ALTER TABLE {vacancy_table_name} ADD COLUMN company_id INT
+            ALTER TABLE vacancy ADD COLUMN company_id INT
             ''')
-            cur.execute(f'''
-            UPDATE {vacancy_table_name} SET company_id={company_name_table}.company_id FROM {company_name_table} 
-            WHERE {vacancy_table_name}.company_name={company_name_table}.company_name
+            cur.execute('''
+            UPDATE vacancy SET company_id=company.company_id FROM company 
+            WHERE vacancy.company_name=company.company_name
             ''')
-            cur.execute(f'''
-            ALTER TABLE {vacancy_table_name} DROP COLUMN company_name
+            cur.execute('''
+            ALTER TABLE vacancy DROP COLUMN company_name
             ''')
-            cur.execute(f'''ALTER TABLE {vacancy_table_name} ALTER COLUMN company_id SET NOT NULL''')
-            cur.execute(f'''ALTER TABLE {vacancy_table_name} ADD CONSTRAINT fk_list_vacancy_company_id_company 
-            FOREIGN KEY (company_id) REFERENCES {company_name_table}(company_id)''')
+            cur.execute('''ALTER TABLE vacancy ALTER COLUMN company_id SET NOT NULL''')
+            cur.execute('''ALTER TABLE vacancy ADD CONSTRAINT fk_list_vacancy_company_id_company 
+            FOREIGN KEY (company_id) REFERENCES company(company_id)''')
             conn.commit()
         except Exception as f:
             print(f'Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}')

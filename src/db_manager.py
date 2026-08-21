@@ -15,7 +15,7 @@ class DbManager:
 
     @classmethod
     def get_companies_and_vacancies_count(cls, db_name):
-        '''Получает список всех компаний и количество вакансий у каждой компании.'''
+        """Получает список всех компаний и количество вакансий у каждой компании."""
 
         # Устанавливаем связь с файлом .env для получения скрытых данных.
         load_dotenv()
@@ -38,8 +38,8 @@ class DbManager:
 
     @classmethod
     def get_all_vacancies(cls, db_name):
-        '''Получает список всех вакансий с указанием названия компании,
-        названия вакансии, зарплаты и ссылки на вакансию.'''
+        """Получает список всех вакансий с указанием названия компании,
+        названия вакансии, зарплаты и ссылки на вакансию."""
 
         load_dotenv()
         password = os.getenv('db_password')
@@ -148,7 +148,7 @@ class DbManager:
 # for i in result_4:
 #     print(i)
 
-
-result_5 = DbManager.get_vacancies_with_keyword('coursework_3', 'Python')
-for i in result_5:
-    print(i)
+#
+# result_5 = DbManager.get_vacancies_with_keyword('coursework_3', 'Python')
+# for i in result_5:
+#     print(i)
