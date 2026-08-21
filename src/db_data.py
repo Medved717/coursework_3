@@ -1,5 +1,3 @@
-from os import getenv
-
 import psycopg2
 from dotenv import load_dotenv
 import os
@@ -8,10 +6,11 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from src.api_client import ApiClient
 
+
 class DbSave:
     """Класс для создания базы данных и сохранения таблиц компаний и вакансий."""
 
-    list_vacanccies = ApiClient.get_response_data('hh_vacancies.json')
+    list_vacanccies = ApiClient.get_response_data("hh_vacancies.json")
 
     # def __init__(self, list_vacanccies=None):
     #     if list_vacanccies == None:
@@ -25,20 +24,20 @@ class DbSave:
 
         try:
             load_dotenv()
-            password = os.getenv('db_password')
+            password = os.getenv("db_password")
             conn = psycopg2.connect(
-                user='postgres',
+                user="postgres",
                 password=password,
-                host='localhost',
-                port='5432',
-                dbname='postgres'
+                host="localhost",
+                port="5432",
+                dbname="postgres",
             )
             cur = conn.cursor()
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur.execute(f'''CREATE DATABASE {name_data_base}''')
-            print(f'База данных: {name_data_base} успешно создана.')
+            cur.execute(f"""CREATE DATABASE {name_data_base}""")
+            print(f"База данных: {name_data_base} успешно создана.")
         except Exception as e:
-            print(f'Произошла ошибка! {e}')
+            print(f"Произошла ошибка! {e}")
         finally:
             if cur:
                 cur.close()
@@ -54,32 +53,37 @@ class DbSave:
             list_result = []
 
             for vacancy in cls.list_vacanccies:
-                company_name = vacancy.get('employer', {}).get('name', {})
-                vacancy_name = vacancy.get('name', {})
-                salary_from = vacancy.get('salary', {}).get('from', {})
-                salary_to = vacancy.get('salary', {}).get('to', {})
-                url_vacancy = vacancy.get('alternate_url', {})
-                city_work = vacancy.get('area', {}).get('name', {})
-                requirement = vacancy.get('snippet', {}).get('requirement', {})
+                company_name = vacancy.get("employer", {}).get("name", {})
+                vacancy_name = vacancy.get("name", {})
+                salary_from = vacancy.get("salary", {}).get("from", {})
+                salary_to = vacancy.get("salary", {}).get("to", {})
+                url_vacancy = vacancy.get("alternate_url", {})
+                city_work = vacancy.get("area", {}).get("name", {})
+                requirement = vacancy.get("snippet", {}).get("requirement", {})
 
                 dict_items = {}
-                dict_items['company_name'] = company_name
-                dict_items['vacancy_name'] = vacancy_name
-                dict_items['salary_from'] = salary_from
-                dict_items['salary_to'] = salary_to
-                dict_items['url_vacancy'] = url_vacancy
-                dict_items['city_work'] = city_work
-                dict_items['requirement'] = requirement
+                dict_items["company_name"] = company_name
+                dict_items["vacancy_name"] = vacancy_name
+                dict_items["salary_from"] = salary_from
+                dict_items["salary_to"] = salary_to
+                dict_items["url_vacancy"] = url_vacancy
+                dict_items["city_work"] = city_work
+                dict_items["requirement"] = requirement
 
                 list_result.append(dict_items)
 
             load_dotenv()
-            password = os.getenv('db_password')
+            password = os.getenv("db_password")
 
-            conn = psycopg2.connect(user='postgres', password=password, port='5432',
-                                    dbname=db_name, host='localhost')
+            conn = psycopg2.connect(
+                user="postgres",
+                password=password,
+                port="5432",
+                dbname=db_name,
+                host="localhost",
+            )
             cur = conn.cursor()
-            cur.execute(f'''
+            cur.execute("""
             CREATE TABLE IF NOT EXISTS vacancy (
                 vacancy_id SERIAL PRIMARY KEY,
                 company_name VARCHAR(100) NOT NULL,
@@ -89,28 +93,25 @@ class DbSave:
                 url_vacancy VARCHAR(350) NOT NULL,
                 city_work VARCHAR(50) NOT NULL,
                 requirement VARCHAR(350) NOT NULL
-            )''')
-
+            )""")
 
             for vacancy in list_result:
-                cur.execute('''INSERT INTO vacancy (vacancy_name, 
-                                                          company_name, 
-                                                          salary_from, 
-                                                          salary_to, 
-                                                          url_vacancy,
-                                                          city_work,
-                                                          requirement) 
-                                                          VALUES (%s, %s, %s, %s, %s, %s, %s)''',
-                            (vacancy['vacancy_name'],
-                             vacancy['company_name'],
-                             vacancy['salary_from'],
-                             vacancy['salary_to'],
-                             vacancy['url_vacancy'],
-                             vacancy['city_work'],
-                             vacancy['requirement']))
+                cur.execute(
+                    """INSERT INTO vacancy (vacancy_name, company_name, salary_from, salary_to, url_vacancy,
+                city_work, requirement) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (
+                        vacancy["vacancy_name"],
+                        vacancy["company_name"],
+                        vacancy["salary_from"],
+                        vacancy["salary_to"],
+                        vacancy["url_vacancy"],
+                        vacancy["city_work"],
+                        vacancy["requirement"],
+                    ),
+                )
             conn.commit()
         except Exception as f:
-            print(f'Ошибка: Возможно таблица уже была создана!{f}')
+            print(f"Ошибка: Возможно таблица уже была создана!{f}")
         finally:
             cur.close()
             conn.close()
@@ -121,43 +122,46 @@ class DbSave:
         """Создание таблицы компании из-под таблицы вакансий."""
 
         load_dotenv()
-        password = os.getenv('db_password')
+        password = os.getenv("db_password")
         conn = psycopg2.connect(
-            user='postgres',
+            user="postgres",
             password=password,
-            host='localhost',
-            port='5432',
-            dbname=db_name
+            host="localhost",
+            port="5432",
+            dbname=db_name,
         )
 
         cur = conn.cursor()
         try:
-            cur.execute('''
+            cur.execute("""
                 CREATE TABLE IF NOT EXISTS company (
         company_id SERIAL PRIMARY KEY,
         company_name VARCHAR(100) NOT NULL,
         count_vacancy INT NOT NULL)
-            ''')
-            cur.execute('''
-            INSERT INTO company (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy 
-            FROM vacancy GROUP BY company_name ORDER BY company_name ASC'''
-            )
-            cur.execute(f'''
+            """)
+            cur.execute("""
+            INSERT INTO company (company_name, count_vacancy) SELECT company_name, COUNT(*) AS count_vacancy
+            FROM vacancy GROUP BY company_name ORDER BY company_name ASC""")
+            cur.execute("""
             ALTER TABLE vacancy ADD COLUMN company_id INT
-            ''')
-            cur.execute('''
-            UPDATE vacancy SET company_id=company.company_id FROM company 
+            """)
+            cur.execute("""
+            UPDATE vacancy SET company_id=company.company_id FROM company\n
             WHERE vacancy.company_name=company.company_name
-            ''')
-            cur.execute('''
+            """)
+            cur.execute("""
             ALTER TABLE vacancy DROP COLUMN company_name
-            ''')
-            cur.execute('''ALTER TABLE vacancy ALTER COLUMN company_id SET NOT NULL''')
-            cur.execute('''ALTER TABLE vacancy ADD CONSTRAINT fk_list_vacancy_company_id_company 
-            FOREIGN KEY (company_id) REFERENCES company(company_id)''')
+            """)
+            cur.execute("""ALTER TABLE vacancy ALTER COLUMN company_id SET NOT NULL""")
+            cur.execute("""
+            ALTER TABLE vacancy ADD CONSTRAINT fk_list_vacancy_company_id_company
+            FOREIGN KEY (company_id) REFERENCES company(company_id)
+            """)
             conn.commit()
         except Exception as f:
-            print(f'Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}')
+            print(
+                f"Произошла ошибка, возможно таблица уже была создана и (или) данные изменены!{f}"
+            )
         finally:
             cur.close()
             conn.close()
@@ -165,26 +169,28 @@ class DbSave:
 
     @staticmethod
     def exists_db(input_db_name):
-        '''Метод проверяет наличие базы данных.'''
+        """Метод проверяет наличие базы данных."""
 
         load_dotenv()
-        password = os.getenv('db_password')
+        password = os.getenv("db_password")
         conn = psycopg2.connect(
-            user='postgres',
+            user="postgres",
             password=password,
-            host='localhost',
-            port='5432',
-            dbname='postgres'
+            host="localhost",
+            port="5432",
+            dbname="postgres",
         )
 
         cur = conn.cursor()
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
-        cur.execute('''SELECT 1 FROM pg_database WHERE datname = %s''', (input_db_name,))
+        cur.execute(
+            """SELECT 1 FROM pg_database WHERE datname = %s""", (input_db_name,)
+        )
         result = cur.fetchone()
         if result and result[0] == 1:
-            print(f'База данных {input_db_name} уже существует!')
+            print(f"База данных {input_db_name} уже существует!")
             return 1
         else:
-            print(f'База данных {input_db_name} отсутствует.')
+            print(f"База данных {input_db_name} отсутствует.")
             return 0

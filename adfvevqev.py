@@ -4,20 +4,20 @@ def create_data_base(name_data_base):
 
     try:
         load_dotenv()
-        password = os.getenv('db_password')
+        password = os.getenv("db_password")
         conn = psycopg2.connect(
-            user='postgres',
+            user="postgres",
             password=password,
-            host='localhost',
-            port='5432',
-            dbname='postgres'
+            host="localhost",
+            port="5432",
+            dbname="postgres",
         )
         cur = conn.cursor()
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur.execute(f'''CREATE DATABASE {name_data_base}''')
-        print(f'База данных: {name_data_base} успешно создана.')
+        cur.execute(f"""CREATE DATABASE {name_data_base}""")
+        print(f"База данных: {name_data_base} успешно создана.")
     except:
-        print('База данных ')
+        print("База данных ")
     finally:
         if cur:
             cur.close()
