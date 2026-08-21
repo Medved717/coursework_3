@@ -48,8 +48,8 @@ class DbManager:
                                 dbname=db_name, host='localhost')
         cur = conn.cursor()
         cur.execute('''
-        SELECT  company.company_name, vacancy_name, salary_from, salary_to, url_vacancy FROM list_vacancy
-        INNER JOIN company ON company.company_id=list_vacancy.company_id
+        SELECT  company.company_name, vacancy_name, salary_from, salary_to, url_vacancy FROM vacancy
+        INNER JOIN company ON company.company_id=vacancy.company_id
         ''')
         result = cur.fetchall()
 
@@ -74,7 +74,7 @@ class DbManager:
         )
         cur = conn.cursor()
         cur.execute("""
-        SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM list_vacancy 
+        SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM vacancy 
         """)
         result = cur.fetchone()
         cur.close()
@@ -100,7 +100,7 @@ class DbManager:
         )
         cur = conn.cursor()
         cur.execute('''
-        SELECT * FROM list_vacancy WHERE ((salary_from + salary_to) / 2) > %s
+        SELECT * FROM vacancy WHERE ((salary_from + salary_to) / 2) > %s
         ''', (avg_salary,))
         result = cur.fetchall()
 
@@ -125,30 +125,10 @@ class DbManager:
         )
         cur = conn.cursor()
         cur.execute("""
-        SELECT * FROM list_vacancy WHERE requirement ILIKE %s
+        SELECT * FROM vacancy WHERE requirement ILIKE %s
         """, (f'%{search_word}%',))
 
         result = cur.fetchall()
         cur.close()
         conn.close()
         return result
-
-# result = DbManager.get_companies_and_vacancies_count('coursework_3')
-# print(result)
-
-# result_2 = DbManager.get_all_vacancies('coursework_3')
-# for i in result_2:
-#     print(i)
-
-
-# result_3 = DbManager.get_avg_salary('coursework_3')
-# print(result_3)
-
-# result_4 = DbManager.get_vacancies_with_higher_salary('coursework_3')
-# for i in result_4:
-#     print(i)
-
-#
-# result_5 = DbManager.get_vacancies_with_keyword('coursework_3', 'Python')
-# for i in result_5:
-#     print(i)

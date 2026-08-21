@@ -188,22 +188,3 @@ class DbSave:
         else:
             print(f'База данных {input_db_name} отсутствует.')
             return 0
-
-
-
-
-
-
-# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result_1 = obj_1.create_data_base('coursework_3')
-#
-#
-# obj_1 = DbSave(ApiClient.get_response_data('hh_vacancies.json'))
-# result_2 = obj_1.create_table_vacancy('coursework_3')
-# print(result_2)
-#
-#
-# retult_3 = DbSave.create_table_company('coursework_3', 'company')
-#
-# result_4 = DbSave.exists_db('coursework_3')
-# print(result_4)
