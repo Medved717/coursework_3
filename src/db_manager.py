@@ -10,7 +10,7 @@ class DbManager:
     в том числе обработкой и выведенийм информации о вакансиях."""
 
 
-    def __init__(self, list_vacanccies=None):
+    def __init__(self, list_vacanccies=None) -> None:
         """Метод предоставляет возможность вносить свой файл при создании объекта класса"""
 
         if list_vacanccies == None:
