@@ -9,11 +9,10 @@ class DbManager:
     """Класс предназначен для работы с таблицами базы данных,
     в том числе обработкой и выведенийм информации о вакансиях."""
 
-
     def __init__(self, list_vacanccies=None) -> None:
         """Метод предоставляет возможность вносить свой файл при создании объекта класса"""
 
-        if list_vacanccies == None:
+        if list_vacanccies is None:
             list_vacanccies = FileWork.get_response_data("hh_vacancies.json")
         else:
             self.list_vacanccies = list_vacanccies
@@ -37,8 +36,10 @@ class DbManager:
         cur = conn.cursor()
 
         # Демонстрируем сведения по вакансиям в каждой компании.
-        cur.execute("""SELECT company_name, count_vacancy, vacancy_name FROM company
-        INNER JOIN vacancy ON company.company_id=vacancy.company_id""") # Добавил через INNER таблицу так как заранее
+        cur.execute(
+            """SELECT company_name, count_vacancy, vacancy_name FROM company
+        INNER JOIN vacancy ON company.company_id=vacancy.company_id"""
+        )  # Добавил через INNER таблицу так как заранее
         # не было в условии написано какая таблица должна из каких столбцов состоять, в следствии чего первая таблица
         # была выполнена в виде ответа и воспроизведена ранее как SELECT, сейчас добавлен столбец из другой таблицы,
         # чтобы выполнить условие курсовой.
@@ -94,20 +95,17 @@ class DbManager:
         )
         cur = conn.cursor()
         cur.execute("""
-SELECT * FROM vacancy WHERE ((salary_to + salary_from)/2) > (SELECT AVG((salary_to + salary_from)/2) FROM vacancy)
+SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM vacancy
         """)
         result = cur.fetchone()
         cur.close()
         conn.close()
-        print(type(result[0]))
         return result[0]
 
     @classmethod
     def get_vacancies_with_higher_salary(cls, db_name: str) -> list:
         """Получает список всех вакансий, у которых
         зарплата выше средней по всем вакансиям."""
-
-        avg_salary = DbManager.get_avg_salary(db_name)
 
         load_dotenv()
         password = os.getenv("db_password")
@@ -120,12 +118,10 @@ SELECT * FROM vacancy WHERE ((salary_to + salary_from)/2) > (SELECT AVG((salary_
             dbname=db_name,
         )
         cur = conn.cursor()
-        cur.execute(
-            """
-        SELECT * FROM vacancy WHERE ((salary_from + salary_to) / 2) > %s
-        """,
-            (avg_salary,),
-        )
+        cur.execute("""
+        SELECT * FROM vacancy WHERE ((salary_to + salary_from)/2) >
+        (SELECT AVG((salary_to + salary_from)/2) FROM vacancy)
+        """)
         result = cur.fetchall()
 
         cur.close()
@@ -158,3 +154,7 @@ SELECT * FROM vacancy WHERE ((salary_to + salary_from)/2) > (SELECT AVG((salary_
         cur.close()
         conn.close()
         return result
+
+
+result = DbManager.get_vacancies_with_higher_salary("coursework_33")
+print(len(result))
