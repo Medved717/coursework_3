@@ -13,7 +13,7 @@ class DbSave:
     list_vacanccies = FileWork.get_response_data("hh_vacancies.json")
 
     @staticmethod
-    def create_data_base(name_data_base):
+    def create_data_base(name_data_base: str) -> None:
         """Создание базы данных для работы с вакансиями."""
 
         try:
@@ -37,9 +37,10 @@ class DbSave:
                 cur.close()
             if conn:
                 conn.close()
+        return None
 
     @classmethod
-    def create_table_vacancy(cls, db_name):
+    def create_table_vacancy(cls, db_name: str) -> None:
         """Метод создает таблицу вакансий в базе данных с указанием названия id вакансии,
         названия вакансии, названия компании, зарплаты и ссылки на вакансию."""
 
@@ -112,7 +113,7 @@ class DbSave:
         return None
 
     @staticmethod
-    def create_table_company(db_name):
+    def create_table_company(db_name: str) -> None:
         """Создание таблицы компании из-под таблицы вакансий."""
 
         load_dotenv()
@@ -162,7 +163,7 @@ class DbSave:
         return None
 
     @staticmethod
-    def exists_db(input_db_name):
+    def exists_db(input_db_name: str) -> int:
         """Метод проверяет наличие базы данных."""
 
         load_dotenv()

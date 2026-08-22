@@ -8,15 +8,15 @@ class ApiClient:
     """Класс написан как теоритический и в курсовой используется
     только как пример ввиду невозможности подключиться к API hh.ru."""
 
-    def __init__(self, url, headers, params):
-        '''Задаются автоматические параметры при запросе API
-        в адрес hh.ru для автоматизации процесса возвращения данных.'''
+    def __init__(self) -> None:
+        """Задаются автоматические параметры при запросе API
+        в адрес hh.ru для автоматизации процесса возвращения данных."""
 
         self.url = "https://api.hh.ru/vacancies"
         self.headers = {"User-Agent": "MySuperApp/1.0 (my-super-examplel@mail.ru)"}
         self.params = {"text": "Python", "area": 113, "per_page": 20, "page": 0}
 
-    def get_response_save(self, url, headers, params):
+    def get_response_save(self, url: str, headers: dict, params: dict) -> None:
         """Получаине ответа API запроса на hh.ru и сохранение сведений в формате json."""
 
         response = requests.get(url, headers=headers, params=params)

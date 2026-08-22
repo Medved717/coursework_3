@@ -2,9 +2,10 @@ import os
 import json
 
 class FileWork:
+    """Класс предназначен для работы с файловой системой, в том числе обработкой, хранением и передачей информации."""
 
     @staticmethod
-    def get_response_data(name_file):
+    def get_response_data(name_file: str) -> list:
         """Получение сохраненных данных из hh.ru и вывод списка вакансий."""
 
         file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
