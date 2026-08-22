@@ -4,19 +4,13 @@ import os
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from src.api_client import ApiClient
+from src.file_work import FileWork
 
 
 class DbSave:
     """Класс для создания базы данных и сохранения таблиц компаний и вакансий."""
 
-    list_vacanccies = ApiClient.get_response_data("hh_vacancies.json")
-
-    # def __init__(self, list_vacanccies=None):
-    #     if list_vacanccies == None:
-    #         list_vacanccies = ApiClient.get_response_data('hh_vacancies.json')
-    #     else:
-    #         self.list_vacanccies=list_vacanccies
+    list_vacanccies = FileWork.get_response_data("hh_vacancies.json")
 
     @staticmethod
     def create_data_base(name_data_base):
