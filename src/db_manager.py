@@ -37,7 +37,11 @@ class DbManager:
         cur = conn.cursor()
 
         # Демонстрируем сведения по вакансиям в каждой компании.
-        cur.execute("""SELECT company_name, count_vacancy FROM company""")
+        cur.execute("""SELECT company_name, count_vacancy, vacancy_name FROM company
+        INNER JOIN vacancy ON company.company_id=vacancy.company_id""") # Добавил через INNER таблицу так как заранее
+        # не было в условии написано какая таблица должна из каких столбцов состоять, в следствии чего первая таблица
+        # была выполнена в виде ответа и воспроизведена ранее как SELECT, сейчас добавлен столбец из другой таблицы,
+        # чтобы выполнить условие курсовой.
         result = cur.fetchall()
 
         conn.commit()  # Комитим изменения в базе данных.
@@ -90,7 +94,7 @@ class DbManager:
         )
         cur = conn.cursor()
         cur.execute("""
-SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM vacancy
+SELECT * FROM vacancy WHERE ((salary_to + salary_from)/2) > (SELECT AVG((salary_to + salary_from)/2) FROM vacancy)
         """)
         result = cur.fetchone()
         cur.close()
@@ -129,7 +133,7 @@ SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM vacancy
         return result
 
     @classmethod
-    def get_vacancies_with_keyword(clas, db_name: str, search_word: str) -> list:
+    def get_vacancies_with_keyword(cls, db_name: str, search_word: str) -> list:
         """Получает список всех вакансий, в названии которых содержатся
         переданные в метод слова, например python."""
 
