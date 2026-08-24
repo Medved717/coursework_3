@@ -15,3 +15,12 @@ class FileWork:
             data = json.load(file)
             list_vacancies = data["items"]
             return list_vacancies
+
+    @staticmethod
+    def save_response_data(data):
+        """Сохранение полученных сведений api в формате json."""
+
+        file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        file_api_hh = os.path.join(file_path, "data", "api_hh.json")
+        with open(file_api_hh, "w", encoding="utf-8") as file:
+            json.dump(data, file)

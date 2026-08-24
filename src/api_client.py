@@ -17,7 +17,7 @@ class ApiClient:
         self.params = {"text": "Python", "area": 113, "per_page": 20, "page": 0}
 
     def get_response_save(self, url: str, headers: dict, params: dict) -> None:
-        """Получаине ответа API запроса на hh.ru и сохранение сведений в формате json."""
+        """Получение ответа API запроса на hh.ru и сохранение сведений в формате json."""
 
         response = requests.get(url, headers=headers, params=params)
 
@@ -25,10 +25,5 @@ class ApiClient:
             data = response.json()
             for vacancy in data["items"]:
                 print(f"{vacancy['name']} — {vacancy['employer']['name']}")
-
-            file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            file_api_hh = os.path.join(file_path, "data", "api_hh.json")
-            with open(file_api_hh, "w", encoding="utf-8") as file:
-                json.dump(data, file)
         else:
             print(f"Ошибка: {response.status_code}")
