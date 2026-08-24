@@ -2,6 +2,7 @@ import sys
 
 from src.db_data import DbSave
 from src.db_manager import DbManager
+from src.vacancy import Vacancy
 
 if __name__ == "__main__":
 
@@ -33,7 +34,7 @@ if __name__ == "__main__":
         while True:
             input_world = input("Пользователь: (Да или нет)? ").lower()
             if input_world == "да":
-                DbSave.create_table_vacancy(input_name_bd)
+                Vacancy.create_table_vacancy(input_name_bd)
                 print("Таблица вакансий - company успешно создана.")
                 DbSave.create_table_company(input_name_bd)
                 print("Таблица вакансий - vacancy успешно создана.")

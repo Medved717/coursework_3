@@ -36,13 +36,12 @@ class DbManager:
         cur = conn.cursor()
 
         # Демонстрируем сведения по вакансиям в каждой компании.
-        cur.execute(
-            """SELECT company_name, count_vacancy, vacancy_name FROM company
-        INNER JOIN vacancy ON company.company_id=vacancy.company_id"""
-        )  # Добавил через INNER таблицу так как заранее
-        # не было в условии написано какая таблица должна из каких столбцов состоять, в следствии чего первая таблица
-        # была выполнена в виде ответа и воспроизведена ранее как SELECT, сейчас добавлен столбец из другой таблицы,
-        # чтобы выполнить условие курсовой.
+        cur.execute("""
+        SELECT company_name, COUNT(vacancy.vacancy_id) 
+        FROM company 
+        INNER JOIN vacancy ON company.company_id=vacancy.company_id
+        GROUP BY company_name""")
+
         result = cur.fetchall()
 
         conn.commit()  # Комитим изменения в базе данных.
