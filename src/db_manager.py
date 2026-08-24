@@ -145,16 +145,12 @@ SELECT AVG((salary_to + salary_from)/2) AS avg_salary FROM vacancy
         cur = conn.cursor()
         cur.execute(
             """
-        SELECT * FROM vacancy WHERE requirement ILIKE %s
+        SELECT * FROM vacancy WHERE LOWER(vacancy_name) LIKE %s
         """,
-            (f"%{search_word}%",),
+            (f"%{search_word.lower()}%",),
         )
 
         result = cur.fetchall()
         cur.close()
         conn.close()
         return result
-
-
-result = DbManager.get_vacancies_with_higher_salary("coursework_33")
-print(len(result))

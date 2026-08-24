@@ -17,10 +17,14 @@ class FileWork:
             return list_vacancies
 
     @staticmethod
-    def save_response_data(data):
+    def save_response_data(data: json) -> None:
         """Сохранение полученных сведений api в формате json."""
 
-        file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        file_api_hh = os.path.join(file_path, "data", "api_hh.json")
-        with open(file_api_hh, "w", encoding="utf-8") as file:
-            json.dump(data, file)
+        if data is not None:
+            file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_api_hh = os.path.join(file_path, "data", "api_hh.json")
+            with open(file_api_hh, "w", encoding="utf-8") as file:
+                json.dump(data, file)
+        else:
+            print('Невозможно сохранить пустые данны api.')
+        return None

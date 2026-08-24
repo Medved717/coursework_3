@@ -3,6 +3,8 @@ import json
 import requests
 import os
 
+from src.db_manager import result
+
 
 class ApiClient:
     """Класс написан как теоритический и в курсовой используется
@@ -16,7 +18,7 @@ class ApiClient:
         self.headers = {"User-Agent": "MySuperApp/1.0 (my-super-examplel@mail.ru)"}
         self.params = {"text": "Python", "area": 113, "per_page": 20, "page": 0}
 
-    def get_response_save(self, url: str, headers: dict, params: dict) -> None:
+    def get_response_save(self, url: str, headers: dict, params: dict) -> dict|None:
         """Получение ответа API запроса на hh.ru и сохранение сведений в формате json."""
 
         response = requests.get(url, headers=headers, params=params)
@@ -27,3 +29,5 @@ class ApiClient:
                 print(f"{vacancy['name']} — {vacancy['employer']['name']}")
         else:
             print(f"Ошибка: {response.status_code}")
+            data = None
+        return data
